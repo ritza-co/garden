@@ -11,7 +11,6 @@ import { randomString } from "../../../../../src/util/string"
 import { ensureConnected, getConnection } from "../../../../../src/db/connection"
 import { Warning } from "../../../../../src/db/entities/warning"
 import { getLogger } from "../../../../../src/logger/logger"
-import { getLogMessages } from "../../../../helpers"
 
 describe("Warning", () => {
   const key = randomString(10)
@@ -42,7 +41,7 @@ describe("Warning", () => {
       const log = getLogger().placeholder()
       const message = "Oh noes!"
       await Warning.emit({ key, log, message })
-      const logs = getLogMessages(log)
+      const logs = log.getLogMessages()
       expect(logs.length).to.equal(1)
       expect(logs[0]).to.equal(message + `\nRun garden util hide-warning ${key} to disable this warning.`)
     })
@@ -52,7 +51,7 @@ describe("Warning", () => {
       const message = "Oh noes!"
       await Warning.hide(key)
       await Warning.emit({ key, log, message })
-      const logs = getLogMessages(log)
+      const logs = log.getLogMessages()
       expect(logs.length).to.equal(0)
     })
   })

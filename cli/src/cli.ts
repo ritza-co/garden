@@ -22,6 +22,7 @@ export const getBundledPlugins = (): GardenPluginCallback[] =>
     require("@garden-io/garden-conftest-kubernetes"),
     require("@garden-io/garden-jib"),
     require("@garden-io/garden-maven-container"),
+    require("@garden-io/garden-terraform"),
   ].map((m) => () => m.gardenPlugin())
 
 export async function runCli({

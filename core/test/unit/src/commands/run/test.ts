@@ -9,13 +9,7 @@
 import stripAnsi from "strip-ansi"
 import { expect } from "chai"
 import { omit } from "lodash"
-import {
-  makeTestGardenA,
-  makeTestGardenTasksFails,
-  withDefaultGlobalOpts,
-  expectError,
-  getLogMessages,
-} from "../../../../helpers"
+import { makeTestGardenA, makeTestGardenTasksFails, withDefaultGlobalOpts, expectError } from "../../../../helpers"
 import { RunTestCommand } from "../../../../../src/commands/run/test"
 import { LogLevel } from "../../../../../src/logger/logger"
 import { dedent } from "../../../../../src/util/string"
@@ -128,7 +122,7 @@ describe("RunTestCommand", () => {
       opts: withDefaultGlobalOpts({ "force": false, "force-build": false, "interactive": false }),
     })
 
-    const logOutput = getLogMessages(log, (entry) => entry.level === LogLevel.info).join("\n")
+    const logOutput = log.getLogMessages((entry) => entry.level === LogLevel.info).join("\n")
 
     expect(logOutput).to.include(dedent`
     \nTest output:
@@ -153,7 +147,7 @@ describe("RunTestCommand", () => {
       opts: withDefaultGlobalOpts({ "force": false, "force-build": false, "interactive": true }),
     })
 
-    const logOutput = getLogMessages(log, (entry) => entry.level === LogLevel.info).join("\n")
+    const logOutput = log.getLogMessages((entry) => entry.level === LogLevel.info).join("\n")
     expect(logOutput).to.not.include("Run test result:")
   })
 
@@ -170,7 +164,7 @@ describe("RunTestCommand", () => {
       opts: withDefaultGlobalOpts({ "force": false, "force-build": false, "interactive": false }),
     })
 
-    const logOutput = getLogMessages(log, (entry) => entry.level === LogLevel.error).join("\n")
+    const logOutput = log.getLogMessages((entry) => entry.level === LogLevel.error).join("\n")
     expect(logOutput).to.include(dedent`
     \nFailed running unit tests in module module. Here is the output:
     ${renderDivider()}
@@ -192,7 +186,7 @@ describe("RunTestCommand", () => {
       opts: withDefaultGlobalOpts({ "force": false, "force-build": false, "interactive": true }),
     })
 
-    const logOutput = getLogMessages(log, (entry) => entry.level === LogLevel.error).join("\n")
+    const logOutput = log.getLogMessages((entry) => entry.level === LogLevel.error).join("\n")
     expect(logOutput).to.not.include("test-error")
   })
 })

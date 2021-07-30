@@ -16,6 +16,7 @@ import { getChildEntries, findParentEntry } from "./util"
 import { GardenError } from "../exceptions"
 import { CreateNodeParams, Logger, PlaceholderOpts } from "./logger"
 import uniqid from "uniqid"
+import stripAnsi from "strip-ansi"
 
 export type EmojiName = keyof typeof nodeEmoji.emoji
 export type LogSymbol = keyof typeof logSymbols | "empty"
@@ -357,6 +358,16 @@ export class LogEntry implements LogNode {
 
   getChildEntries() {
     return getChildEntries(this)
+  }
+
+  /**
+   * Retrieves all the child log entries from the entry and returns a list of all the messages,
+   * stripped of ANSI characters. Useful to check if a particular message was logged.
+   */
+  getLogMessages(filter?: (log: LogEntry) => boolean) {
+    return this.getChildEntries()
+      .filter((entry) => (filter ? filter(entry) : true))
+      .flatMap((entry) => entry.getMessages()?.map((state) => stripAnsi(state.msg || "")) || [])
   }
 
   /**

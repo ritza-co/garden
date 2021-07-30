@@ -25,6 +25,9 @@
     },
     {
       "path": "../plugins/maven-container"
+    },
+    {
+      "path": "../plugins/terraform"
     }
   ]
 }

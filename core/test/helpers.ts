@@ -27,8 +27,8 @@ import { ModuleConfig } from "../src/config/module"
 import { mapValues, fromPairs } from "lodash"
 import { ModuleVersion } from "../src/vcs/vcs"
 import { GARDEN_CORE_ROOT, LOCAL_CONFIG_FILENAME, DEFAULT_API_VERSION, gardenEnv } from "../src/constants"
-import { uuidv4 } from "../src/util/util"
 import { LogEntry } from "../src/logger/log-entry"
+import { isPromise, uuidv4 } from "../src/util/util"
 import timekeeper = require("timekeeper")
 import { ParameterValues, globalOptions, GlobalOptions, Parameters } from "../src/cli/params"
 import { RunModuleParams } from "../src/types/plugin/module/runModule"
@@ -38,7 +38,6 @@ import { RunResult } from "../src/types/plugin/base"
 import { ExternalSourceType, getRemoteSourceRelPath, hashRepoUrl } from "../src/util/ext-source-util"
 import { ActionRouter } from "../src/actions"
 import { CommandParams, ProcessCommandResult } from "../src/commands/base"
-import stripAnsi from "strip-ansi"
 import { RunTaskParams, RunTaskResult } from "../src/types/plugin/task/runTask"
 import { SuiteFunction, TestFunction } from "mocha"
 import { AnalyticsGlobalConfig } from "../src/config-store"
@@ -502,17 +501,6 @@ export function trimLineEnds(str: string) {
     .split("\n")
     .map((line) => line.trimRight())
     .join("\n")
-}
-
-/**
- * Retrieves all the child log entries from the given LogEntry and returns a list of all the messages,
- * stripped of ANSI characters. Useful to check if a particular message was logged.
- */
-export function getLogMessages(log: LogEntry, filter?: (log: LogEntry) => boolean) {
-  return log
-    .getChildEntries()
-    .filter((entry) => (filter ? filter(entry) : true))
-    .flatMap((entry) => entry.getMessages()?.map((state) => stripAnsi(state.msg || "")) || [])
 }
 
 const skipGroups = gardenEnv.GARDEN_SKIP_TESTS.split(" ")

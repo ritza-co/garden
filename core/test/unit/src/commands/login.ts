@@ -8,7 +8,7 @@
 
 import { expect } from "chai"
 import td from "testdouble"
-import { expectError, getDataDir, cleanupAuthTokens, getLogMessages, makeCommandParams } from "../../../helpers"
+import { expectError, getDataDir, cleanupAuthTokens, makeCommandParams } from "../../../helpers"
 import { AuthRedirectServer } from "../../../../src/cloud/auth"
 
 import { LoginCommand } from "../../../../src/commands/login"
@@ -84,7 +84,7 @@ describe("LoginCommand", () => {
     expect(savedToken!.token).to.eql(testToken.token)
     expect(savedToken!.refreshToken).to.eql(testToken.refreshToken)
 
-    const logOutput = getLogMessages(garden.log, (entry) => entry.level === LogLevel.info).join("\n")
+    const logOutput = garden.log.getLogMessages((entry) => entry.level === LogLevel.info).join("\n")
 
     expect(logOutput).to.include("You're already logged in to Garden Enterprise.")
   })
@@ -185,7 +185,7 @@ describe("LoginCommand", () => {
       (err) => expect(stripAnsi(err.message)).to.match(/bummer/)
     )
 
-    const logOutput = getLogMessages(garden.log, (entry) => entry.level <= LogLevel.info).join("\n")
+    const logOutput = garden.log.getLogMessages((entry) => entry.level <= LogLevel.info).join("\n")
 
     expect(logOutput).to.include(dedent`
       Looks like your session token is invalid. If you were previously logged into a different instance
@@ -210,7 +210,7 @@ describe("LoginCommand", () => {
 
       await command.action(makeCommandParams({ garden, args: {}, opts: {} }))
 
-      const logOutput = getLogMessages(garden.log, (entry) => entry.level === LogLevel.info).join("\n")
+      const logOutput = garden.log.getLogMessages((entry) => entry.level === LogLevel.info).join("\n")
 
       expect(logOutput).to.include("You're already logged in to Garden Enterprise.")
     })

@@ -7,15 +7,7 @@
  */
 
 import { exec, getPlatform, getArchitecture } from "../../../../src/util/util"
-import {
-  makeTempDir,
-  TempDirectory,
-  TestGarden,
-  withDefaultGlobalOpts,
-  dataDir,
-  getLogMessages,
-  expectError,
-} from "../../../helpers"
+import { makeTempDir, TempDirectory, TestGarden, withDefaultGlobalOpts, dataDir, expectError } from "../../../helpers"
 import { expect } from "chai"
 import { DEFAULT_API_VERSION } from "../../../../src/constants"
 import { createGardenPlugin } from "../../../../src/types/plugin/plugin"
@@ -126,7 +118,8 @@ describe("ToolsCommand", () => {
       opts: withDefaultGlobalOpts({ "get-path": false }),
     })
 
-    const infoLog = getLogMessages(log, (entry) => entry.level === LogLevel.info)
+    const infoLog = log
+      .getLogMessages((entry) => entry.level === LogLevel.info)
       .join("\n")
       .trim()
       .split("\n")

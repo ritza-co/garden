@@ -13,7 +13,6 @@ import { RunTaskCommand } from "../../../../../src/commands/run/task"
 import {
   withDefaultGlobalOpts,
   expectError,
-  getLogMessages,
   TestGarden,
   projectRootA,
   testPlugin,
@@ -172,7 +171,7 @@ describe("RunTaskCommand", () => {
       opts: withDefaultGlobalOpts({ "force": false, "force-build": false }),
     })
 
-    const logOutput = getLogMessages(log, (entry) => entry.level === LogLevel.info).join("\n")
+    const logOutput = log.getLogMessages((entry) => entry.level === LogLevel.info).join("\n")
 
     expect(logOutput).to.include(dedent`
     \nTask output:
@@ -197,7 +196,7 @@ describe("RunTaskCommand", () => {
       opts: withDefaultGlobalOpts({ "force": false, "force-build": false }),
     })
 
-    const logOutput = getLogMessages(log, (entry) => entry.level === LogLevel.error).join("\n")
+    const logOutput = log.getLogMessages((entry) => entry.level === LogLevel.error).join("\n")
 
     expect(logOutput).to.not.include("Run task failed with error")
   })

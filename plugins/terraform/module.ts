@@ -8,15 +8,12 @@
 
 import { join } from "path"
 import { pathExists } from "fs-extra"
-import { joi } from "../../config/common"
-import { dedent, deline } from "../../util/string"
+import { joi } from "@garden-io/core/build/src/config/common"
+import { dedent, deline } from "@garden-io/sdk/util/string"
 import { supportedVersions, terraform } from "./cli"
-import { GardenModule } from "../../types/module"
-import { ConfigureModuleParams } from "../../types/plugin/module/configure"
-import { ConfigurationError } from "../../exceptions"
-import { dependenciesSchema } from "../../config/service"
-import { DeployServiceParams } from "../../../src/types/plugin/service/deployService"
-import { GetServiceStatusParams } from "../../../src/types/plugin/service/getServiceStatus"
+import { GardenModule } from "@garden-io/sdk/types"
+import { ConfigurationError } from "@garden-io/sdk/exceptions"
+import { dependenciesSchema } from "@garden-io/core/build/src/config/service"
 import {
   getStackStatus,
   applyStack,
@@ -26,11 +23,10 @@ import {
   prepareVariables,
   setWorkspace,
 } from "./common"
-import { TerraformProvider } from "./terraform"
-import { ServiceStatus } from "../../types/service"
-import { baseBuildSpecSchema } from "../../config/module"
-import chalk = require("chalk")
-import { DeleteServiceParams } from "../../types/plugin/service/deleteService"
+import { TerraformProvider } from "."
+import { baseBuildSpecSchema } from "@garden-io/core/build/src/config/module"
+import chalk from "chalk"
+import { ModuleActionHandlers, ServiceActionHandlers } from "@garden-io/sdk/types"
 
 export interface TerraformModuleSpec extends TerraformBaseSpec {
   root: string
@@ -71,7 +67,7 @@ export const terraformModuleSchema = () =>
     workspace: joi.string().allow(null).description("Use the specified Terraform workspace."),
   })
 
-export async function configureTerraformModule({ ctx, moduleConfig }: ConfigureModuleParams<TerraformModule>) {
+export const configureTerraformModule: ModuleActionHandlers["configure"] = async ({ ctx, moduleConfig }) => {
   // Make sure the configured root path exists
   const root = moduleConfig.spec.root
   if (root) {
@@ -108,12 +104,12 @@ export async function configureTerraformModule({ ctx, moduleConfig }: ConfigureM
   return { moduleConfig }
 }
 
-export async function getTerraformStatus({
+export const getTerraformStatus: ServiceActionHandlers["getServiceStatus"] = async ({
   ctx,
   log,
   module,
   service,
-}: GetServiceStatusParams<TerraformModule>): Promise<ServiceStatus> {
+}) => {
   const provider = ctx.provider as TerraformProvider
   const root = getModuleStackRoot(module)
   const variables = module.spec.variables
@@ -136,12 +132,12 @@ export async function getTerraformStatus({
   }
 }
 
-export async function deployTerraform({
+export const deployTerraform: ServiceActionHandlers["deployService"] = async ({
   ctx,
   log,
   module,
   service,
-}: DeployServiceParams<TerraformModule>): Promise<ServiceStatus> {
+}) => {
   const provider = ctx.provider as TerraformProvider
   const workspace = module.spec.workspace || null
   const root = getModuleStackRoot(module)
@@ -170,12 +166,12 @@ export async function deployTerraform({
   }
 }
 
-export async function deleteTerraformModule({
+export const deleteTerraformModule: ServiceActionHandlers["deleteService"] = async ({
   ctx,
   log,
   module,
   service,
-}: DeleteServiceParams<TerraformModule>): Promise<ServiceStatus> {
+}) => {
   const provider = ctx.provider as TerraformProvider
 
   if (!module.spec.allowDestroy) {

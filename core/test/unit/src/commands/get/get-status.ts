@@ -15,7 +15,7 @@ import { createGardenPlugin } from "../../../../../src/types/plugin/plugin"
 import { joi } from "../../../../../src/config/common"
 import { ServiceState } from "../../../../../src/types/service"
 import { GetServiceStatusParams } from "../../../../../src/types/plugin/service/getServiceStatus"
-import { TestGarden, getLogMessages } from "../../../../helpers"
+import { TestGarden } from "../../../../helpers"
 import { GetStatusCommand } from "../../../../../src/commands/get/get-status"
 import { withDefaultGlobalOpts } from "../../../../helpers"
 import { expect } from "chai"
@@ -122,7 +122,7 @@ describe("GetStatusCommand", () => {
 
       expect(command.outputsSchema().validate(result).error).to.be.undefined
 
-      const logMessages = getLogMessages(log, (l) => l.level === LogLevel.warn)
+      const logMessages = log.getLogMessages((l) => l.level === LogLevel.warn)
 
       expect(logMessages).to.include(
         "Unable to resolve status for service test-service. It is likely missing or outdated. This can come up if the service has runtime dependencies that are not resolvable, i.e. not deployed or invalid."

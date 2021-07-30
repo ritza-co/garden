@@ -6,6 +6,4 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-// TODO: re-organize (and maybe rename) these upstream
-export { DEFAULT_API_VERSION as defaultApiVersion, DOCS_BASE_URL as docsBaseUrl } from "@garden-io/core/build/src/constants"
-export { defaultNamespace } from "@garden-io/core/build/src/config/project"
+export * from "@garden-io/core/build/src/exceptions"

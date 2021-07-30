@@ -8,14 +8,11 @@
 
 import { join } from "path"
 import { pathExists } from "fs-extra"
-import { createGardenPlugin } from "../../types/plugin/plugin"
+import { createGardenPlugin } from "@garden-io/sdk"
 import { getEnvironmentStatus, prepareEnvironment, cleanupEnvironment } from "./init"
-import { providerConfigBaseSchema, GenericProviderConfig, Provider } from "../../config/provider"
-import { joi, joiVariables } from "../../config/common"
-import { dedent } from "../../util/string"
+import { dedent } from "@garden-io/sdk/util/string"
 import { supportedVersions, defaultTerraformVersion, terraformCliSpecs } from "./cli"
-import { ConfigureProviderParams, ConfigureProviderResult } from "../../types/plugin/provider/configureProvider"
-import { ConfigurationError } from "../../exceptions"
+import { ConfigurationError } from "@garden-io/sdk/exceptions"
 import { variablesSchema, TerraformBaseSpec } from "./common"
 import {
   terraformModuleSchema,
@@ -24,10 +21,12 @@ import {
   deployTerraform,
   deleteTerraformModule,
 } from "./module"
-import { DOCS_BASE_URL } from "../../constants"
-import { SuggestModulesParams, SuggestModulesResult } from "../../types/plugin/module/suggestModules"
-import { listDirectory } from "../../util/fs"
+import { docsBaseUrl } from "@garden-io/sdk/constants"
+import { listDirectory } from "@garden-io/sdk/util/fs"
 import { getTerraformCommands } from "./commands"
+
+import { providerConfigBaseSchema, GenericProviderConfig, Provider } from "@garden-io/core/build/src/config/provider"
+import { joi, joiVariables } from "@garden-io/core/build/src/config/common"
 
 type TerraformProviderConfig = GenericProviderConfig &
   TerraformBaseSpec & {
@@ -49,7 +48,7 @@ const configSchema = providerConfigBaseSchema()
     initRoot: joi.posixPath().subPathOnly().description(dedent`
         Specify the path to a Terraform config directory, that should be resolved when initializing the provider. This is useful when other providers need to be able to reference the outputs from the stack.
 
-        See the [Terraform guide](${DOCS_BASE_URL}/advanced/terraform) for more information.
+        See the [Terraform guide](${docsBaseUrl}/advanced/terraform) for more information.
       `),
     // When you provide variables directly in \`terraform\` modules, those variables will
     // extend the ones specified here, and take precedence if the keys overlap.
@@ -76,14 +75,33 @@ export const gardenPlugin = () =>
   createGardenPlugin({
     name: "terraform",
     docs: dedent`
-    This provider allows you to integrate Terraform stacks into your Garden project. See the [Terraform guide](${DOCS_BASE_URL}/advanced/terraform) for details and usage information.
+    This provider allows you to integrate Terraform stacks into your Garden project. See the [Terraform guide](${docsBaseUrl}/advanced/terraform) for details and usage information.
   `,
     configSchema,
     handlers: {
-      configureProvider,
       getEnvironmentStatus,
       prepareEnvironment,
       cleanupEnvironment,
+
+      async configureProvider({
+        config,
+        projectRoot,
+      }) {
+        // Make sure the configured root path exists, if it is set
+        if (config.initRoot) {
+          const absRoot = join(projectRoot, config.initRoot)
+          const exists = await pathExists(absRoot)
+
+          if (!exists) {
+            throw new ConfigurationError(
+              `Terraform: configured initRoot config directory '${config.initRoot}' does not exist`,
+              { config, projectRoot }
+            )
+          }
+        }
+
+        return { config }
+      },
     },
     commands: getTerraformCommands(),
     createModuleTypes: [
@@ -98,12 +116,12 @@ export const gardenPlugin = () =>
 
       Note that you can also declare a Terraform root in the \`terraform\` provider configuration by setting the \`initRoot\` parameter. This may be preferable if you need the outputs of the Terraform stack to be available to other provider configurations, e.g. if you spin up an environment with the Terraform provider, and then use outputs from that to configure another provider or other modules via \`${providerOutputsTemplateString}\` template strings.
 
-      See the [Terraform guide](${DOCS_BASE_URL}/advanced/terraform) for a high-level introduction to the \`terraform\` provider.
+      See the [Terraform guide](${docsBaseUrl}/advanced/terraform) for a high-level introduction to the \`terraform\` provider.
     `,
         serviceOutputsSchema: joiVariables().description("A map of all the outputs defined in the Terraform stack."),
         schema: terraformModuleSchema(),
         handlers: {
-          suggestModules: async ({ name, path }: SuggestModulesParams): Promise<SuggestModulesResult> => {
+          async suggestModules({ name, path }) {
             const files = await listDirectory(path, { recursive: false })
 
             if (files.filter((f) => f.endsWith(".tf")).length > 0) {
@@ -132,23 +150,3 @@ export const gardenPlugin = () =>
     ],
     tools: Object.values(terraformCliSpecs),
   })
-
-async function configureProvider({
-  config,
-  projectRoot,
-}: ConfigureProviderParams<TerraformProviderConfig>): Promise<ConfigureProviderResult> {
-  // Make sure the configured root path exists, if it is set
-  if (config.initRoot) {
-    const absRoot = join(projectRoot, config.initRoot)
-    const exists = await pathExists(absRoot)
-
-    if (!exists) {
-      throw new ConfigurationError(
-        `Terraform: configured initRoot config directory '${config.initRoot}' does not exist`,
-        { config, projectRoot }
-      )
-    }
-  }
-
-  return { config }
-}

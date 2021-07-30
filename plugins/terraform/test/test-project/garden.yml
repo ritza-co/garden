@@ -15,5 +15,3 @@ providers:
     variables:
       my-variable: foo
       env: ${environment.name}
-  - name: test-plugin
-    something: ${providers.terraform.outputs.my-output}

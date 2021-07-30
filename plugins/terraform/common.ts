@@ -10,15 +10,15 @@ import { resolve } from "path"
 import { startCase, mapValues } from "lodash"
 import split2 = require("split2")
 
-import { ConfigurationError, PluginError, RuntimeError } from "../../exceptions"
-import { LogEntry } from "../../logger/log-entry"
-import { dedent } from "../../util/string"
+import { ConfigurationError, PluginError, RuntimeError } from "@garden-io/sdk/exceptions"
+import { LogEntry, PluginContext } from "@garden-io/sdk/types"
+import { dedent } from "@garden-io/sdk/util/string"
 import { terraform } from "./cli"
-import { TerraformProvider } from "./terraform"
-import { PluginContext } from "../../plugin-context"
-import { joi, PrimitiveMap, joiStringMap } from "../../config/common"
+import { TerraformProvider } from "."
 import { writeFile } from "fs-extra"
 import chalk from "chalk"
+
+import { joi, PrimitiveMap, joiStringMap } from "@garden-io/core/build/src/config/common"
 
 export const variablesSchema = () => joiStringMap(joi.any())
 

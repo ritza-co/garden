@@ -13,6 +13,7 @@ import { Logger, LogLevel } from "@garden-io/core/build/src/logger/logger"
 export { TestGarden } from "@garden-io/core/build/src/util/testing"
 export { expectError } from "@garden-io/core/build/src/util/testing"
 export { makeTempDir } from "@garden-io/core/build/src/util/fs"
+export { TestGarden } from "@garden-io/core/build/src/util/testing"
 
 export const makeTestGarden = async (projectRoot: string, opts: TestGardenOpts = {}): Promise<TestGarden> => {
   // Make sure Logger is initialized
@@ -20,6 +21,7 @@ export const makeTestGarden = async (projectRoot: string, opts: TestGardenOpts =
     Logger.initialize({
       level: LogLevel.info,
       type: "quiet",
+      storeEntries: true,
     })
   } catch (_) {}
 

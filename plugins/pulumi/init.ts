@@ -6,16 +6,14 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-import { TerraformProvider } from "./terraform"
-import { GetEnvironmentStatusParams, EnvironmentStatus } from "../../types/plugin/provider/getEnvironmentStatus"
-import { PrepareEnvironmentParams, PrepareEnvironmentResult } from "../../types/plugin/provider/prepareEnvironment"
+import { TerraformProvider } from "."
 import { getRoot, getTfOutputs, getStackStatus, applyStack, prepareVariables, setWorkspace } from "./common"
 import chalk from "chalk"
-import { deline } from "../../util/string"
-import { CleanupEnvironmentResult, CleanupEnvironmentParams } from "../../types/plugin/provider/cleanupEnvironment"
+import { deline } from "@garden-io/sdk/util/string"
+import { PluginActionHandlers } from "@garden-io/sdk/types"
 import { terraform } from "./cli"
 
-export async function getEnvironmentStatus({ ctx, log }: GetEnvironmentStatusParams): Promise<EnvironmentStatus> {
+export const getEnvironmentStatus: PluginActionHandlers["getEnvironmentStatus"] = async ({ ctx, log }) => {
   const provider = ctx.provider as TerraformProvider
 
   // Return if there is no root stack, or if we're running one of the terraform plugin commands
@@ -53,7 +51,7 @@ export async function getEnvironmentStatus({ ctx, log }: GetEnvironmentStatusPar
   }
 }
 
-export async function prepareEnvironment({ ctx, log }: PrepareEnvironmentParams): Promise<PrepareEnvironmentResult> {
+export const prepareEnvironment: PluginActionHandlers["prepareEnvironment"] = async ({ ctx, log }) => {
   const provider = ctx.provider as TerraformProvider
 
   if (!provider.config.initRoot) {
@@ -79,7 +77,7 @@ export async function prepareEnvironment({ ctx, log }: PrepareEnvironmentParams)
   }
 }
 
-export async function cleanupEnvironment({ ctx, log }: CleanupEnvironmentParams): Promise<CleanupEnvironmentResult> {
+export const cleanupEnvironment: PluginActionHandlers["cleanupEnvironment"] = async ({ ctx, log }) => {
   const provider = ctx.provider as TerraformProvider
 
   if (!provider.config.initRoot) {

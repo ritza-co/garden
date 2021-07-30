@@ -6,7 +6,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-import { withDefaultGlobalOpts, getLogMessages, projectRootA, makeTestGarden } from "../../../../helpers"
+import { withDefaultGlobalOpts, projectRootA, makeTestGarden } from "../../../../helpers"
 import { expect } from "chai"
 import { Warning } from "../../../../../src/db/entities/warning"
 import { getConnection } from "../../../../../src/db/connection"
@@ -34,7 +34,7 @@ describe("HideWarningCommand", () => {
         log,
         message: "foo",
       })
-      expect(getLogMessages(log).length).to.equal(0)
+      expect(log.getLogMessages().length).to.equal(0)
     } finally {
       await getConnection().getRepository(Warning).createQueryBuilder().delete().where({ key }).execute()
     }

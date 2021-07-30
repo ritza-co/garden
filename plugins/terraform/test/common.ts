@@ -6,25 +6,23 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-import { getDataDir, makeTestGarden } from "../../../../helpers"
 import { join } from "path"
-import { Garden } from "../../../../../src/garden"
 import { pathExists, remove } from "fs-extra"
-import { PluginContext } from "../../../../../src/plugin-context"
-import { TerraformProvider } from "../../../../../src/plugins/terraform/terraform"
-import { LogEntry } from "../../../../../src/logger/log-entry"
-import { getWorkspaces, setWorkspace } from "../../../../../src/plugins/terraform/common"
+import { gardenPlugin, TerraformProvider } from ".."
+import { TestGarden, makeTestGarden } from "@garden-io/sdk/testing"
+import { LogEntry, PluginContext } from "@garden-io/sdk/types"
+import { getWorkspaces, setWorkspace } from "../common"
 import { expect } from "chai"
-import { terraform } from "../../../../../src/plugins/terraform/cli"
+import { terraform } from "../cli"
 
 describe("Terraform common", () => {
-  const testRoot = getDataDir("test-projects", "terraform-provider")
+  const testRoot = join(__dirname, "test-project")
   const root = join(testRoot, "tf")
   const terraformDirPath = join(root, ".terraform")
   const stateDirPath = join(root, "terraform.tfstate.d")
   const testFilePath = join(root, "test.log")
 
-  let garden: Garden
+  let garden: TestGarden
   let log: LogEntry
   let ctx: PluginContext
   let provider: TerraformProvider
@@ -42,7 +40,7 @@ describe("Terraform common", () => {
   }
 
   before(async () => {
-    garden = await makeTestGarden(testRoot, { environmentName: "prod", forceRefresh: true })
+    garden = await makeTestGarden(testRoot, { plugins: [gardenPlugin], environmentName: "prod", forceRefresh: true })
     log = garden.log
     provider = (await garden.resolveProvider(log, "terraform")) as TerraformProvider
     ctx = await garden.getPluginContext(provider)

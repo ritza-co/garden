@@ -8,7 +8,7 @@
 
 import { expect } from "chai"
 import td from "testdouble"
-import { getDataDir, cleanupAuthTokens, getLogMessages, makeCommandParams } from "../../../helpers"
+import { getDataDir, cleanupAuthTokens, makeCommandParams } from "../../../helpers"
 import { makeDummyGarden } from "../../../../src/cli/cli"
 import { ClientAuthToken } from "../../../../src/db/entities/client-auth-token"
 import { randomString } from "../../../../src/util/string"
@@ -53,7 +53,7 @@ describe("LogoutCommand", () => {
     await command.action(makeCommandParams({ garden, args: {}, opts: {} }))
 
     const tokenAfterLogout = await ClientAuthToken.findOne()
-    const logOutput = getLogMessages(garden.log, (entry) => entry.level === LogLevel.info).join("\n")
+    const logOutput = garden.log.getLogMessages((entry) => entry.level === LogLevel.info).join("\n")
 
     expect(tokenAfterLogout).to.not.exist
     expect(logOutput).to.include("Succesfully logged out from Garden Enterprise.")
@@ -68,7 +68,7 @@ describe("LogoutCommand", () => {
 
     await command.action(makeCommandParams({ garden, args: {}, opts: {} }))
 
-    const logOutput = getLogMessages(garden.log, (entry) => entry.level === LogLevel.info).join("\n")
+    const logOutput = garden.log.getLogMessages((entry) => entry.level === LogLevel.info).join("\n")
     expect(logOutput).to.include("You're already logged out from Garden Enterprise.")
   })
 
@@ -101,7 +101,7 @@ describe("LogoutCommand", () => {
     await command.action(makeCommandParams({ garden, args: {}, opts: {} }))
 
     const tokenAfterLogout = await ClientAuthToken.findOne()
-    const logOutput = getLogMessages(garden.log, (entry) => entry.level === LogLevel.info).join("\n")
+    const logOutput = garden.log.getLogMessages((entry) => entry.level === LogLevel.info).join("\n")
 
     expect(tokenAfterLogout).to.not.exist
     expect(logOutput).to.include("Succesfully logged out from Garden Enterprise.")
@@ -136,7 +136,7 @@ describe("LogoutCommand", () => {
     await command.action(makeCommandParams({ garden, args: {}, opts: {} }))
 
     const tokenAfterLogout = await ClientAuthToken.findOne()
-    const logOutput = getLogMessages(garden.log, (entry) => entry.level === LogLevel.info).join("\n")
+    const logOutput = garden.log.getLogMessages((entry) => entry.level === LogLevel.info).join("\n")
 
     expect(tokenAfterLogout).to.not.exist
     expect(logOutput).to.include("Succesfully logged out from Garden Enterprise.")
