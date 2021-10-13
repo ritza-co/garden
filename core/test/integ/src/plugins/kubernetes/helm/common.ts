@@ -6,10 +6,11 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
+import Bluebird from "bluebird"
 import { TestGarden, makeTestGarden, dataDir, expectError } from "../../../../../helpers"
 import { resolve } from "path"
 import { expect } from "chai"
-import { first, uniq } from "lodash"
+import { uniq } from "lodash"
 
 import {
   containsSource,
@@ -22,12 +23,13 @@ import {
   renderTemplates,
 } from "../../../../../../src/plugins/kubernetes/helm/common"
 import { LogEntry } from "../../../../../../src/logger/log-entry"
-import { BuildTask } from "../../../../../../src/tasks/build"
 import { deline, dedent } from "../../../../../../src/util/string"
 import { ConfigGraph } from "../../../../../../src/config-graph"
 import { KubernetesPluginContext } from "../../../../../../src/plugins/kubernetes/config"
 import { safeLoadAll } from "js-yaml"
-import { Garden } from "../../../../../../src"
+import { prepareHelmModule } from "../../../../../../src/plugins/kubernetes/helm/deployment"
+import { BuildTask } from "../../../../../../src/tasks/build"
+import { Garden } from "../../../../../../src/garden"
 
 let helmTestGarden: TestGarden
 
@@ -44,26 +46,30 @@ export async function getHelmTestGarden() {
   return garden
 }
 
-export async function buildHelmModules(garden: Garden | TestGarden, graph: ConfigGraph) {
-  const modules = graph.getModules()
-  const tasks = modules.map(
+export async function prepareHelmModules(
+  garden: Garden | TestGarden,
+  ctx: KubernetesPluginContext,
+  graph: ConfigGraph
+) {
+  const log = garden.log
+  const helmModules = graph.getModules().filter((module) => module.type === "helm")
+  // First, we build the Helm modules. The build action itself is a no-op for Helm modules, but we need to
+  // stage the sources.
+  const buildTasks = helmModules.map(
     (module) =>
       new BuildTask({
         garden,
         graph,
-        log: garden.log,
+        log,
         module,
         force: false,
         _guard: true,
       })
   )
-  const results = await garden.processTasks(tasks)
-
-  const err = first(Object.values(results).map((r) => r && r.error))
-
-  if (err) {
-    throw err
-  }
+  await garden.processTasks(buildTasks)
+  await Bluebird.map(helmModules, async (module) => {
+    return prepareHelmModule({ ctx, module, log })
+  })
 }
 
 describe("Helm common functions", () => {
@@ -74,11 +80,11 @@ describe("Helm common functions", () => {
 
   before(async () => {
     garden = await getHelmTestGarden()
+    log = garden.log
     const provider = await garden.resolveProvider(garden.log, "local-kubernetes")
     ctx = (await garden.getPluginContext(provider)) as KubernetesPluginContext
-    log = garden.log
     graph = await garden.getConfigGraph({ log: garden.log, emit: false })
-    await buildHelmModules(garden, graph)
+    await prepareHelmModules(garden, ctx, graph)
   })
 
   beforeEach(async () => {
