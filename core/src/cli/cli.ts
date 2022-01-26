@@ -40,6 +40,8 @@ import { GardenPluginCallback } from "../types/plugin/plugin"
 import { renderError } from "../logger/renderers"
 import { CloudApi } from "../cloud/api"
 import chalk = require("chalk")
+import { prepareDebugLogfiles } from "./debug-logs"
+import { LogEntry } from "../logger/log-entry"
 
 export async function makeDummyGarden(root: string, gardenOpts: GardenOpts) {
   const environments = gardenOpts.environmentName
@@ -99,11 +101,36 @@ ${renderCommands(commands)}
     `
   }
 
-  private async initFileWriters(logger: Logger, gardenDirPath: string) {
+  private async initFileWriters({
+    logger,
+    log,
+    gardenDirPath,
+    commandFullName,
+  }: {
+    logger: Logger
+    log: LogEntry
+    gardenDirPath: string
+    commandFullName: string
+  }) {
     if (this.fileWritersInitialized) {
       return
     }
+    const { debugLogfileName, sillyLogfileName } = await prepareDebugLogfiles(
+      log,
+      join(gardenDirPath, LOGS_DIR_NAME),
+      commandFullName
+    )
     const logConfigs: FileWriterConfig[] = [
+      {
+        logFilePath: join(gardenDirPath, LOGS_DIR_NAME, debugLogfileName),
+        truncatePrevious: true,
+        level: LogLevel.debug,
+      },
+      {
+        logFilePath: join(gardenDirPath, LOGS_DIR_NAME, sillyLogfileName),
+        truncatePrevious: true,
+        level: LogLevel.silly,
+      },
       {
         logFilePath: join(gardenDirPath, ERROR_LOG_FILENAME),
         truncatePrevious: true,
@@ -328,7 +355,12 @@ ${renderCommands(commands)}
 
         // Register log file writers. We need to do this after the Garden class is initialised because
         // the file writers depend on the project root.
-        await this.initFileWriters(logger, garden.gardenDirPath)
+        await this.initFileWriters({
+          logger,
+          log,
+          gardenDirPath: garden.gardenDirPath,
+          commandFullName: command.getFullName(),
+        })
         analytics = await AnalyticsHandler.init(garden, log)
         analytics.trackCommand(command.getFullName())
 
