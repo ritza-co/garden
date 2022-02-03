@@ -58,6 +58,7 @@ describe("deployHelmService", () => {
     const releaseName = getReleaseName(service.module)
     const releaseStatus = await getReleaseStatus({
       ctx,
+      module: service.module,
       service,
       releaseName,
       log: garden.log,
@@ -98,6 +99,7 @@ describe("deployHelmService", () => {
     const releaseName = getReleaseName(service.module)
     const status = await getReleaseStatus({
       ctx,
+      module: service.module,
       service,
       releaseName,
       log: garden.log,
@@ -132,6 +134,7 @@ describe("deployHelmService", () => {
 
     const status = await getReleaseStatus({
       ctx,
+      module: service.module,
       service,
       releaseName,
       log: garden.log,
@@ -169,6 +172,7 @@ describe("deployHelmService", () => {
     const releaseName = getReleaseName(service.module)
     const status = await getReleaseStatus({
       ctx,
+      module: service.module,
       service,
       releaseName,
       log: garden.log,
