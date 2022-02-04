@@ -24,6 +24,7 @@ type WrappedFromGarden = Pick<
   | "projectRoot"
   | "gardenDirPath"
   | "workingCopyId"
+  | "cloudApi"
   // TODO: remove this from the interface
   | "environmentName"
   | "production"
